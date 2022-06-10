@@ -1,8 +1,6 @@
-import axios from "axios";
+// import axios from "axios";
 
 const request = () => {
-    return (
-        //
-    )
-}
+  return <div>Hello</div>;
+};
 export default Request;
