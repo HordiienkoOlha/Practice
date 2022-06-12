@@ -1,18 +1,55 @@
 import { Component } from 'react';
 import Button from './Button/Button';
+import { getMovies } from 'services/api';
+import MoviesList from './MoviesList';
+import { mapper } from 'helpers/maper';
 
 class App extends Component {
   state = {
-    name: 'Show films',
+    isShow: false,
+    movies: [],
+    page: 1,
+    isLoading: false,
   };
-  onHandle() {
-    console.log('Click Button');
+  componentDidUpdate(prevProps, prevState) {
+    const { isShow, page } = this.state;
+    if (prevState.isShow !== isShow || prevState.page !== page) {
+      this.fetchMovies(page);
+    }
   }
+  onHandle = () => {
+    console.log('Click Button');
+    this.setState({ isShow: true });
+  };
+  fetchMovies = page => {
+    this.setState({ isLoading: true });
+    getMovies(page)
+      .then(({ data }) => {
+        this.setState(prevState => ({
+          movies: [...prevState.movies, ...mapper(data.results)],
+        }));
+      })
+      .catch(error => console.log(error))
+      .finally(this.setState({ isLoading: false }));
+  };
+  onLoadMore = () => {
+    let { page } = this.state;
+    page += 1;
+    this.setState({ page });
+  };
   render() {
-    const { name } = this.state;
+    const { isShow, movies, isLoading } = this.state;
     return (
       <>
-        <Button name={name} onHandle={this.onHandle}></Button>
+        {!isShow && (
+          <Button name={'Show films'} onHandle={this.onHandle}></Button>
+        )}
+
+        <MoviesList movies={movies} />
+        {isLoading && <h2>Is loading</h2>}
+        {movies.length > 0 && (
+          <Button name={'Load more'} onHandle={this.onLoadMore}></Button>
+        )}
       </>
     );
   }
