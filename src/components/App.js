@@ -1,57 +1,22 @@
-import { Component } from 'react';
-import Button from './Button/Button';
-import { getMovies } from 'services/api';
-import MoviesList from './MoviesList';
-import { mapper } from 'helpers/maper';
+import { Route, Routes } from 'react-router-dom';
+import Layout from './Layout/Layout';
+import HomeView from '../views/HomeView';
+import EventsView from '../views/EventsView';
+import EventSubsView from 'views/EventSubsView';
+import EventsViewDetails from 'views/EventsViewDetails';
+import NotFoundView from 'views/NotFoundView';
 
-class App extends Component {
-  state = {
-    isShow: false,
-    movies: [],
-    page: 1,
-    isLoading: false,
-  };
-  componentDidUpdate(prevProps, prevState) {
-    const { isShow, page } = this.state;
-    if (prevState.isShow !== isShow || prevState.page !== page) {
-      this.fetchMovies(page);
-    }
-  }
-  onHandle = () => {
-    console.log('Click Button');
-    this.setState({ isShow: true });
-  };
-  fetchMovies = page => {
-    this.setState({ isLoading: true });
-    getMovies(page)
-      .then(({ data }) => {
-        this.setState(prevState => ({
-          movies: [...prevState.movies, ...mapper(data.results)],
-        }));
-      })
-      .catch(error => console.log(error))
-      .finally(this.setState({ isLoading: false }));
-  };
-  onLoadMore = () => {
-    let { page } = this.state;
-    page += 1;
-    this.setState({ page });
-  };
-  render() {
-    const { isShow, movies, isLoading } = this.state;
-    return (
-      <>
-        {!isShow && (
-          <Button name={'Show films'} onHandle={this.onHandle}></Button>
-        )}
-
-        <MoviesList movies={movies} />
-        {isLoading && <h2>Is loading</h2>}
-        {movies.length > 0 && (
-          <Button name={'Load more'} onHandle={this.onLoadMore}></Button>
-        )}
-      </>
-    );
-  }
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<HomeView />} />
+        <Route path="events" element={<EventsView />}>
+          <Route path=":eventId" element={<EventSubsView />} />
+        </Route>
+        <Route path="events/:eventId/details" element={<EventsViewDetails />} />
+        <Route path="*" element={<NotFoundView />} />
+      </Route>
+    </Routes>
+  );
 }
-export default App;
